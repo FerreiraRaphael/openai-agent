@@ -1,0 +1,11 @@
+packages:
+  - agent
+  - client
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@swc/core'
+  - better-sqlite3
+  - es5-ext
+  - esbuild
+ignoredBuiltDependencies:
+  - sqlite3
