@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1741724013751,
+      "tag": "0000_groovy_wolf_cub",
+      "breakpoints": true
+    }
+  ]
+}
