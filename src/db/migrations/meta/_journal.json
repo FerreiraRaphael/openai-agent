@@ -8,6 +8,13 @@
       "when": 1741724013751,
       "tag": "0000_groovy_wolf_cub",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1741729604791,
+      "tag": "0001_dizzy_giant_man",
+      "breakpoints": true
     }
   ]
 }
