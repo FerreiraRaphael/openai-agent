@@ -5,6 +5,6 @@ export default {
   out: './src/db/migrations',
   driver: 'better-sqlite',
   dbCredentials: {
-    url: 'sqlite.db'
-  }
+    url: 'sqlite.db',
+  },
 } satisfies Config;

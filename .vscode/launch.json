@@ -8,15 +8,11 @@
       "type": "node",
       "request": "attach",
       "name": "Debug Agent",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "port": 9229,
       "restart": true,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceFolder}/dist/**/*.js"
-      ]
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]
 }

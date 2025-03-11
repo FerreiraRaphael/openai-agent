@@ -1,16 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import OpenAI from "openai";
-import { DatabaseService } from "../db/database.service";
-import { eq } from "drizzle-orm";
-import { conversations, messages } from "../db/schema";
-import { DrizzleError } from "drizzle-orm/errors";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import OpenAI from 'openai';
+import { DatabaseService } from '../db/database.service';
+import { eq } from 'drizzle-orm';
+import { conversations, messages } from '../db/schema';
+import { DrizzleError } from 'drizzle-orm/errors';
 import {
   ChatCompletionMessageParam,
   ChatCompletionUserMessageParam,
   ChatCompletionAssistantMessageParam,
   ChatCompletionFunctionMessageParam,
-} from "openai/resources/chat/completions";
+} from 'openai/resources/chat/completions';
 
 type TimeResponse = {
   time: string;
@@ -25,7 +25,7 @@ type WeatherResponse = {
 type FunctionResponse = TimeResponse | WeatherResponse;
 type AgentFunction = (args?: Record<string, unknown>) => FunctionResponse;
 
-type MessageRole = "user" | "assistant" | "function";
+type MessageRole = 'user' | 'assistant' | 'function';
 
 @Injectable()
 export class AgentService {
@@ -36,9 +36,9 @@ export class AgentService {
     private configService: ConfigService,
     private db: DatabaseService,
   ) {
-    const apiKey = this.configService.get<string>("OPENAI_API_KEY");
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY environment variable is not set");
+      throw new Error('OPENAI_API_KEY environment variable is not set');
     }
 
     this.client = new OpenAI({ apiKey });
@@ -47,12 +47,8 @@ export class AgentService {
 
   private initializeFunctions(): void {
     this.availableFunctions.clear();
-    this.availableFunctions.set("get_current_time", () =>
-      this.getCurrentTime(),
-    );
-    this.availableFunctions.set("get_weather", (args) =>
-      this.getWeather(args?.city as string),
-    );
+    this.availableFunctions.set('get_current_time', () => this.getCurrentTime());
+    this.availableFunctions.set('get_weather', args => this.getWeather(args?.city as string));
   }
 
   private getCurrentTime(): TimeResponse {
@@ -60,47 +56,44 @@ export class AgentService {
     return { time: currentTime };
   }
 
-  private getWeather(city: string = "London"): WeatherResponse {
+  private getWeather(city: string = 'London'): WeatherResponse {
     // Mock implementation
     return {
       city,
-      temperature: "22°C",
-      condition: "Sunny",
+      temperature: '22°C',
+      condition: 'Sunny',
     };
   }
 
   private getFunctionSpecs() {
     return [
       {
-        name: "get_current_time",
-        description: "Get the current time",
+        name: 'get_current_time',
+        description: 'Get the current time',
         parameters: {
-          type: "object",
+          type: 'object',
           properties: {},
           required: [],
         },
       },
       {
-        name: "get_weather",
-        description: "Get the weather for a specific city",
+        name: 'get_weather',
+        description: 'Get the weather for a specific city',
         parameters: {
-          type: "object",
+          type: 'object',
           properties: {
             city: {
-              type: "string",
-              description: "The city to get weather for",
+              type: 'string',
+              description: 'The city to get weather for',
             },
           },
-          required: ["city"],
+          required: ['city'],
         },
       },
     ];
   }
 
-  private executeFunction(
-    functionName: string,
-    functionArgs: Record<string, unknown>,
-  ): string {
+  private executeFunction(functionName: string, functionArgs: Record<string, unknown>): string {
     const func = this.availableFunctions.get(functionName);
     if (!func) {
       throw new Error(`Function ${functionName} not found`);
@@ -116,12 +109,7 @@ export class AgentService {
     return result[0];
   }
 
-  async addMessage(
-    conversationId: number,
-    role: MessageRole,
-    content: string,
-    name?: string,
-  ) {
+  async addMessage(conversationId: number, role: MessageRole, content: string, name?: string) {
     const db = this.db.getDb();
     return db.insert(messages).values({
       conversationId,
@@ -150,15 +138,15 @@ export class AgentService {
 
   async getResponse(conversationId: number, userInput: string) {
     // Add user input to conversation history
-    await this.addMessage(conversationId, "user", userInput);
+    await this.addMessage(conversationId, 'user', userInput);
 
     // Get conversation history
     const history = await this.getConversationMessages(conversationId);
-    const messages: ChatCompletionMessageParam[] = history.map((msg) => {
-      if (msg.role === "function") {
+    const messages: ChatCompletionMessageParam[] = history.map(msg => {
+      if (msg.role === 'function') {
         return {
           role: msg.role,
-          name: msg.name || "unknown",
+          name: msg.name || 'unknown',
           content: msg.content,
         } as ChatCompletionFunctionMessageParam;
       }
@@ -170,7 +158,7 @@ export class AgentService {
 
     // Get response from OpenAI with function calling
     const response = await this.client.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: 'gpt-3.5-turbo',
       messages,
       functions: this.getFunctionSpecs(),
       temperature: 0.7,
@@ -193,22 +181,17 @@ export class AgentService {
 
       // Add function call and result to conversation history
       if (message.content) {
-        await this.addMessage(conversationId, "assistant", message.content);
+        await this.addMessage(conversationId, 'assistant', message.content);
       }
-      await this.addMessage(
-        conversationId,
-        "function",
-        functionResponse,
-        functionName,
-      );
+      await this.addMessage(conversationId, 'function', functionResponse, functionName);
 
       // Get final response from OpenAI with function result
       const finalResponse = await this.client.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: 'gpt-3.5-turbo',
         messages: [
           ...messages,
           {
-            role: "function",
+            role: 'function',
             name: functionName,
             content: functionResponse,
           } as ChatCompletionFunctionMessageParam,
@@ -219,15 +202,15 @@ export class AgentService {
 
       const assistantResponse = finalResponse.choices[0].message.content;
       if (assistantResponse) {
-        await this.addMessage(conversationId, "assistant", assistantResponse);
+        await this.addMessage(conversationId, 'assistant', assistantResponse);
         return assistantResponse;
       }
-      return "No response generated";
+      return 'No response generated';
     } else if (message.content) {
-      await this.addMessage(conversationId, "assistant", message.content);
+      await this.addMessage(conversationId, 'assistant', message.content);
       return message.content;
     }
 
-    return "No response generated";
+    return 'No response generated';
   }
 }

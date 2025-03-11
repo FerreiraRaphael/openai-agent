@@ -17,6 +17,7 @@ A Python-based AI agent using the OpenAI API.
 ## Usage
 
 Run the agent:
+
 ```bash
 python agent.py
 ```
