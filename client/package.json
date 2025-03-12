@@ -11,7 +11,9 @@
     "codegen": "orval"
   },
   "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.3",
     "@radix-ui/react-icons": "^1.3.0",
+    "@radix-ui/react-scroll-area": "^1.2.3",
     "@radix-ui/react-slot": "^1.1.2",
     "@tanstack/react-query": "^5.67.3",
     "axios": "^1.8.2",
