@@ -5,10 +5,7 @@
  * The AI Agent API description
  * OpenAPI spec version: 1.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -20,231 +17,282 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
+  UseQueryResult,
 } from '@tanstack/react-query';
 
-import type {
-  ConversationResponseDto,
-  MessageRequestDto,
-  MessageResponseDto
-} from '../../model';
+import type { ConversationResponseDto, MessageRequestDto, MessageResponseDto } from '../../model';
 
 import { customInstance } from '../../axios-client';
-
-
-
 
 /**
  * @summary Create a new conversation
  */
-export const agentControllerCreateConversation = (
-    
- signal?: AbortSignal
-) => {
-      
-      
-      return customInstance<ConversationResponseDto>(
-      {url: `/agent/conversations`, method: 'POST', signal
-    },
-      );
-    }
-  
+export const agentControllerCreateConversation = (signal?: AbortSignal) => {
+  return customInstance<ConversationResponseDto>({
+    url: `/agent/conversations`,
+    method: 'POST',
+    signal,
+  });
+};
 
+export const getAgentControllerCreateConversationMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof agentControllerCreateConversation>>,
+    TError,
+    void,
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof agentControllerCreateConversation>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ['agentControllerCreateConversation'];
+  const { mutation: mutationOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
 
-export const getAgentControllerCreateConversationMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agentControllerCreateConversation>>, TError,void, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof agentControllerCreateConversation>>, TError,void, TContext> => {
-    
-const mutationKey = ['agentControllerCreateConversation'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof agentControllerCreateConversation>>,
+    void
+  > = () => {
+    return agentControllerCreateConversation();
+  };
 
-      
+  return { mutationFn, ...mutationOptions };
+};
 
+export type AgentControllerCreateConversationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof agentControllerCreateConversation>>
+>;
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof agentControllerCreateConversation>>, void> = () => {
-          
+export type AgentControllerCreateConversationMutationError = unknown;
 
-          return  agentControllerCreateConversation()
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AgentControllerCreateConversationMutationResult = NonNullable<Awaited<ReturnType<typeof agentControllerCreateConversation>>>
-    
-    export type AgentControllerCreateConversationMutationError = unknown
-
-    /**
+/**
  * @summary Create a new conversation
  */
-export const useAgentControllerCreateConversation = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agentControllerCreateConversation>>, TError,void, TContext>, }
-): UseMutationResult<
-        Awaited<ReturnType<typeof agentControllerCreateConversation>>,
-        TError,
-        void,
-        TContext
-      > => {
+export const useAgentControllerCreateConversation = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof agentControllerCreateConversation>>,
+    TError,
+    void,
+    TContext
+  >;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof agentControllerCreateConversation>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationOptions = getAgentControllerCreateConversationMutationOptions(options);
 
-      const mutationOptions = getAgentControllerCreateConversationMutationOptions(options);
-
-      return useMutation(mutationOptions);
-    }
-    /**
+  return useMutation(mutationOptions);
+};
+/**
  * @summary Send a message in a conversation
  */
 export const agentControllerSendMessage = (
-    id: string,
-    messageRequestDto: MessageRequestDto,
- signal?: AbortSignal
+  id: string,
+  messageRequestDto: MessageRequestDto,
+  signal?: AbortSignal
 ) => {
-      
-      
-      return customInstance<string>(
-      {url: `/agent/conversations/${id}/messages`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: messageRequestDto, signal
-    },
-      );
-    }
-  
+  return customInstance<Blob>({
+    url: `/agent/conversations/${id}/messages`,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    data: messageRequestDto,
+    responseType: 'blob',
+    signal,
+  });
+};
 
+export const getAgentControllerSendMessageMutationOptions = <
+  TError = unknown,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof agentControllerSendMessage>>,
+    TError,
+    { id: string; data: MessageRequestDto },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof agentControllerSendMessage>>,
+  TError,
+  { id: string; data: MessageRequestDto },
+  TContext
+> => {
+  const mutationKey = ['agentControllerSendMessage'];
+  const { mutation: mutationOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
 
-export const getAgentControllerSendMessageMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agentControllerSendMessage>>, TError,{id: string;data: MessageRequestDto}, TContext>, }
-): UseMutationOptions<Awaited<ReturnType<typeof agentControllerSendMessage>>, TError,{id: string;data: MessageRequestDto}, TContext> => {
-    
-const mutationKey = ['agentControllerSendMessage'];
-const {mutation: mutationOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof agentControllerSendMessage>>,
+    { id: string; data: MessageRequestDto }
+  > = (props) => {
+    const { id, data } = props ?? {};
 
-      
+    return agentControllerSendMessage(id, data);
+  };
 
+  return { mutationFn, ...mutationOptions };
+};
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof agentControllerSendMessage>>, {id: string;data: MessageRequestDto}> = (props) => {
-          const {id,data} = props ?? {};
+export type AgentControllerSendMessageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof agentControllerSendMessage>>
+>;
+export type AgentControllerSendMessageMutationBody = MessageRequestDto;
+export type AgentControllerSendMessageMutationError = unknown;
 
-          return  agentControllerSendMessage(id,data,)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AgentControllerSendMessageMutationResult = NonNullable<Awaited<ReturnType<typeof agentControllerSendMessage>>>
-    export type AgentControllerSendMessageMutationBody = MessageRequestDto
-    export type AgentControllerSendMessageMutationError = unknown
-
-    /**
+/**
  * @summary Send a message in a conversation
  */
-export const useAgentControllerSendMessage = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof agentControllerSendMessage>>, TError,{id: string;data: MessageRequestDto}, TContext>, }
-): UseMutationResult<
-        Awaited<ReturnType<typeof agentControllerSendMessage>>,
-        TError,
-        {id: string;data: MessageRequestDto},
-        TContext
-      > => {
+export const useAgentControllerSendMessage = <TError = unknown, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof agentControllerSendMessage>>,
+    TError,
+    { id: string; data: MessageRequestDto },
+    TContext
+  >;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof agentControllerSendMessage>>,
+  TError,
+  { id: string; data: MessageRequestDto },
+  TContext
+> => {
+  const mutationOptions = getAgentControllerSendMessageMutationOptions(options);
 
-      const mutationOptions = getAgentControllerSendMessageMutationOptions(options);
-
-      return useMutation(mutationOptions);
-    }
-    /**
+  return useMutation(mutationOptions);
+};
+/**
  * @summary Get all messages in a conversation
  */
-export const agentControllerGetMessages = (
-    id: string,
- signal?: AbortSignal
+export const agentControllerGetMessages = (id: string, signal?: AbortSignal) => {
+  return customInstance<MessageResponseDto[]>({
+    url: `/agent/conversations/${id}/messages`,
+    method: 'GET',
+    signal,
+  });
+};
+
+export const getAgentControllerGetMessagesQueryKey = (id: string) => {
+  return [`/agent/conversations/${id}/messages`] as const;
+};
+
+export const getAgentControllerGetMessagesQueryOptions = <
+  TData = Awaited<ReturnType<typeof agentControllerGetMessages>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>
+    >;
+  }
 ) => {
-      
-      
-      return customInstance<MessageResponseDto[]>(
-      {url: `/agent/conversations/${id}/messages`, method: 'GET', signal
-    },
-      );
-    }
-  
+  const { query: queryOptions } = options ?? {};
 
-export const getAgentControllerGetMessagesQueryKey = (id: string,) => {
-    return [`/agent/conversations/${id}/messages`] as const;
-    }
+  const queryKey = queryOptions?.queryKey ?? getAgentControllerGetMessagesQueryKey(id);
 
-    
-export const getAgentControllerGetMessagesQueryOptions = <TData = Awaited<ReturnType<typeof agentControllerGetMessages>>, TError = unknown>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>>, }
-) => {
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof agentControllerGetMessages>>> = ({
+    signal,
+  }) => agentControllerGetMessages(id, signal);
 
-const {query: queryOptions} = options ?? {};
+  return { queryKey, queryFn, enabled: !!id, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof agentControllerGetMessages>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-  const queryKey =  queryOptions?.queryKey ?? getAgentControllerGetMessagesQueryKey(id);
+export type AgentControllerGetMessagesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof agentControllerGetMessages>>
+>;
+export type AgentControllerGetMessagesQueryError = unknown;
 
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof agentControllerGetMessages>>> = ({ signal }) => agentControllerGetMessages(id, signal);
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AgentControllerGetMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof agentControllerGetMessages>>>
-export type AgentControllerGetMessagesQueryError = unknown
-
-
-export function useAgentControllerGetMessages<TData = Awaited<ReturnType<typeof agentControllerGetMessages>>, TError = unknown>(
- id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>> & Pick<
+export function useAgentControllerGetMessages<
+  TData = Awaited<ReturnType<typeof agentControllerGetMessages>>,
+  TError = unknown,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof agentControllerGetMessages>>,
           TError,
           Awaited<ReturnType<typeof agentControllerGetMessages>>
-        > , 'initialData'
-      >, }
-
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgentControllerGetMessages<TData = Awaited<ReturnType<typeof agentControllerGetMessages>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>> & Pick<
+        >,
+        'initialData'
+      >;
+  }
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAgentControllerGetMessages<
+  TData = Awaited<ReturnType<typeof agentControllerGetMessages>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof agentControllerGetMessages>>,
           TError,
           Awaited<ReturnType<typeof agentControllerGetMessages>>
-        > , 'initialData'
-      >, }
-
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAgentControllerGetMessages<TData = Awaited<ReturnType<typeof agentControllerGetMessages>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>>, }
-
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        'initialData'
+      >;
+  }
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useAgentControllerGetMessages<
+  TData = Awaited<ReturnType<typeof agentControllerGetMessages>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>
+    >;
+  }
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 /**
  * @summary Get all messages in a conversation
  */
 
-export function useAgentControllerGetMessages<TData = Awaited<ReturnType<typeof agentControllerGetMessages>>, TError = unknown>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>>, }
+export function useAgentControllerGetMessages<
+  TData = Awaited<ReturnType<typeof agentControllerGetMessages>>,
+  TError = unknown,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof agentControllerGetMessages>>, TError, TData>
+    >;
+  }
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getAgentControllerGetMessagesQueryOptions(id, options);
 
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
 
-  const queryOptions = getAgentControllerGetMessagesQueryOptions(id,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-

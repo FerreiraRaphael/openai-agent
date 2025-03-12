@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { AgentService } from './agent.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ConversationResponseDto } from './dto/conversation.dto';
@@ -25,14 +26,24 @@ export class AgentController {
   @ApiOperation({ summary: 'Send a message in a conversation' })
   @ApiResponse({
     status: 201,
-    description: 'The message has been successfully processed.',
-    type: String,
+    description: "Server-sent events stream of the assistant's response",
   })
   async sendMessage(
     @Param('id') conversationId: string,
     @Body() { message }: MessageRequestDto,
-  ): Promise<string> {
-    return this.agentService.getResponse(Number(conversationId), message);
+    @Res() res: Response,
+  ): Promise<void> {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+    try {
+      const stream = await this.agentService.getStreamingResponse(Number(conversationId), message);
+      stream.pipe(res);
+    } catch (error) {
+      res.write(`data: ${error.message}\n\n`);
+      res.end();
+    }
   }
 
   @Get('conversations/:id/messages')

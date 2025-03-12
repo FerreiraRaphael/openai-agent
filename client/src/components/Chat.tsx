@@ -6,16 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   useAgentControllerCreateConversation,
-  useAgentControllerSendMessage,
   useAgentControllerGetMessages,
 } from '@/api/generated/agent/agent';
 import type { MessageResponseDto } from '@/api/model';
+import { AXIOS_INSTANCE } from '@/api/axios-client';
 
 export function Chat() {
   const [conversationId, setConversationId] = useState<string>('');
   const [input, setInput] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
+  console.log('streamingContent', streamingContent);
 
-  // Create a new conversation
   const { mutate: createConversation } = useAgentControllerCreateConversation({
     mutation: {
       onSuccess: (response) => {
@@ -24,43 +26,74 @@ export function Chat() {
     },
   });
 
-  // Send message mutation
-  const { mutate: sendMessage, isPending: isSending } = useAgentControllerSendMessage({
-    mutation: {
-      onSuccess: () => {
-        // Messages will be automatically updated through the query
-      },
-    },
-  });
-
-  // Get messages query
-  const { data: messages, isLoading: isLoadingMessages } = useAgentControllerGetMessages(
+  const { data: messages, refetch: refetchMessages } = useAgentControllerGetMessages(
     conversationId,
     {
       query: {
         enabled: !!conversationId,
-        refetchInterval: 1000, // Poll for new messages every second
       },
     }
   );
 
-  // Create conversation on component mount
   useEffect(() => {
     createConversation();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isSending || !conversationId) return;
+    if (!input.trim() || isStreaming || !conversationId) return;
 
-    sendMessage({
-      id: conversationId,
-      data: { message: input.trim() },
-    });
+    const userInput = input.trim();
     setInput('');
-  };
+    setStreamingContent('');
+    setIsStreaming(true);
 
-  const isLoading = isLoadingMessages || isSending;
+    try {
+      const response = await fetch(
+        `${AXIOS_INSTANCE.defaults.baseURL}/agent/conversations/${conversationId}/messages`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+          },
+          body: JSON.stringify({ message: userInput }),
+        }
+      );
+
+      const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
+      if (!reader) {
+        throw new Error('No reader available');
+      }
+      const True = true;
+      while (True) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        if (value) {
+          const lines = value.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const content = line.slice(6);
+              if (content) {
+                const formattedContent = content.replace(/\\n/g, '\n');
+                setStreamingContent((prev) => prev + formattedContent);
+              }
+            }
+          }
+        }
+      }
+
+      setIsStreaming(false);
+      refetchMessages();
+      setStreamingContent('');
+    } catch (error) {
+      console.error('Streaming error:', error);
+      setIsStreaming(false);
+      refetchMessages();
+      setStreamingContent('');
+    }
+  };
 
   return (
     <div className="container max-w-3xl mx-auto h-[calc(100vh-2rem)] flex flex-col gap-4 py-4">
@@ -88,15 +121,15 @@ export function Chat() {
                 </div>
               </div>
             ))}
-            {isLoading && (
+            {streamingContent && (
               <div className="flex items-start gap-3">
                 <Avatar className="h-8 w-8">
                   <div className="flex h-full w-full items-center justify-center bg-primary text-xs text-primary-foreground">
                     AI
                   </div>
                 </Avatar>
-                <div className="rounded-lg px-4 py-2 bg-muted">
-                  <p className="text-muted-foreground">Thinking...</p>
+                <div className="rounded-lg px-4 py-2 max-w-[80%] bg-muted">
+                  <p className="whitespace-pre-wrap">{streamingContent}</p>
                 </div>
               </div>
             )}
@@ -117,7 +150,7 @@ export function Chat() {
             }
           }}
         />
-        <Button type="submit" disabled={isLoading || !conversationId}>
+        <Button type="submit" disabled={!conversationId}>
           Send
         </Button>
       </form>

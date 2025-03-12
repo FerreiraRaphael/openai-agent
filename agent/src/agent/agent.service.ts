@@ -11,6 +11,7 @@ import {
   ChatCompletionAssistantMessageParam,
   ChatCompletionFunctionMessageParam,
 } from 'openai/resources/chat/completions';
+import { Readable } from 'stream';
 
 type TimeResponse = {
   time: string;
@@ -212,5 +213,114 @@ export class AgentService {
     }
 
     return 'No response generated';
+  }
+
+  async getStreamingResponse(conversationId: number, userInput: string): Promise<Readable> {
+    await this.addMessage(conversationId, 'user', userInput);
+    const history = await this.getConversationMessages(conversationId);
+
+    const messages: ChatCompletionMessageParam[] = history.map(msg => {
+      if (msg.role === 'function' && msg.name) {
+        return {
+          role: msg.role,
+          name: msg.name,
+          content: msg.content || '',
+        } as ChatCompletionFunctionMessageParam;
+      }
+      return {
+        role: msg.role === 'user' || msg.role === 'assistant' ? msg.role : 'user',
+        content: msg.content || '',
+      } as ChatCompletionUserMessageParam | ChatCompletionAssistantMessageParam;
+    });
+
+    const stream = new Readable({
+      read() {}, // Required but we push data manually
+    });
+
+    // Start the OpenAI stream in the background
+    this.handleOpenAIStream(conversationId, messages, stream).catch(error => {
+      console.error('Streaming error:', error);
+      stream.destroy(error);
+    });
+
+    return stream;
+  }
+
+  private async handleOpenAIStream(
+    conversationId: number,
+    messages: ChatCompletionMessageParam[],
+    stream: Readable,
+  ): Promise<void> {
+    try {
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages,
+        functions: this.getFunctionSpecs(),
+        temperature: 0.7,
+        stream: true,
+      });
+
+      let functionCall: { name: string; arguments: string } | undefined;
+      let content = '';
+
+      for await (const chunk of response) {
+        const delta = chunk.choices[0]?.delta;
+
+        if (delta.function_call) {
+          functionCall = functionCall || { name: '', arguments: '' };
+          if (delta.function_call.name) {
+            functionCall.name += delta.function_call.name;
+          }
+          if (delta.function_call.arguments) {
+            functionCall.arguments += delta.function_call.arguments;
+          }
+        } else if (delta.content) {
+          content += delta.content;
+          // Preserve line breaks in the content
+          const formattedContent = delta.content.replace(/\n/g, '\\n');
+          stream.push(`data: ${formattedContent}\n\n`);
+        }
+      }
+
+      if (functionCall && functionCall.name && functionCall.arguments) {
+        if (content) {
+          await this.addMessage(conversationId, 'assistant', content);
+        }
+
+        const functionArgs = JSON.parse(functionCall.arguments);
+        const functionResponse = this.executeFunction(functionCall.name, functionArgs);
+        await this.addMessage(conversationId, 'function', functionResponse, functionCall.name);
+
+        const finalResponse = await this.client.chat.completions.create({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            ...messages,
+            {
+              role: 'function',
+              name: functionCall.name,
+              content: functionResponse,
+            } as ChatCompletionFunctionMessageParam,
+          ],
+          temperature: 0.7,
+          stream: true,
+        });
+
+        for await (const chunk of finalResponse) {
+          const content = chunk.choices[0]?.delta?.content;
+          if (content) {
+            stream.push(`data: ${content}\n\n`);
+          }
+        }
+
+        await this.addMessage(conversationId, 'assistant', content);
+      } else if (content) {
+        await this.addMessage(conversationId, 'assistant', content);
+      }
+
+      stream.push(null);
+    } catch (error) {
+      stream.destroy(error as Error);
+      throw error;
+    }
   }
 }
