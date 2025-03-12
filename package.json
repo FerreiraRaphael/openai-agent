@@ -21,11 +21,11 @@
   "lint-staged": {
     "agent/src/**/*.{js,ts}": [
       "prettier --write",
-      "eslint --config agent/.eslintrc.js --fix"
+      "cd agent && pnpm lint"
     ],
     "client/src/**/*.{js,ts,tsx}": [
       "prettier --write",
-      "eslint --config client/eslint.config.js --fix"
+      "cd client && pnpm lint"
     ],
     "*.{json,css,md}": [
       "prettier --write"
