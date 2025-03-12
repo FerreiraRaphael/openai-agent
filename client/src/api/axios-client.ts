@@ -1,13 +1,7 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export const AXIOS_INSTANCE = axios.create({ baseURL: 'http://localhost:3000' });
 
-export const customInstance = <T>({ url, method, params, data, headers }: any) => {
-  return AXIOS_INSTANCE({
-    url,
-    method,
-    params,
-    data,
-    headers,
-  }) as Promise<T>;
+export const customInstance = <T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> => {
+  return AXIOS_INSTANCE(config);
 };
