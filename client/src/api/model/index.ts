@@ -6,7 +6,16 @@
  * OpenAPI spec version: 1.0
  */
 
+export * from './accommodationDto';
+export * from './activityDto';
+export * from './activityDtoType';
 export * from './conversationResponseDto';
 export * from './messageRequestDto';
 export * from './messageResponseDto';
 export * from './messageResponseDtoRole';
+export * from './transportationDto';
+export * from './tripDayDto';
+export * from './tripDetailsDto';
+export * from './tripQueryRequestDto';
+export * from './tripQueryResponseDto';
+export * from './tripQueryResponseDtoTripDetails';

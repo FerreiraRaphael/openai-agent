@@ -1,19 +1,19 @@
 {
-  "version": "5",
+  "version": "7",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1741724013751,
-      "tag": "0000_groovy_wolf_cub",
+      "version": "6",
+      "when": 1741898015346,
+      "tag": "0000_add_messages_and_conversation",
       "breakpoints": true
     },
     {
       "idx": 1,
-      "version": "5",
-      "when": 1741729604791,
-      "tag": "0001_dizzy_giant_man",
+      "version": "6",
+      "when": 1741961839922,
+      "tag": "0001_add_trip_plan",
       "breakpoints": true
     }
   ]

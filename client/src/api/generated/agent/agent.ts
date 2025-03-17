@@ -20,7 +20,7 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query';
 
-import type { ConversationResponseDto, MessageRequestDto, MessageResponseDto } from '../../model';
+import type { ConversationResponseDto, MessageResponseDto } from '../../model';
 
 import { customInstance } from '../../axios-client';
 
@@ -94,85 +94,6 @@ export const useAgentControllerCreateConversation = <
   TContext
 > => {
   const mutationOptions = getAgentControllerCreateConversationMutationOptions(options);
-
-  return useMutation(mutationOptions);
-};
-/**
- * @summary Send a message in a conversation
- */
-export const agentControllerSendMessage = (
-  id: string,
-  messageRequestDto: MessageRequestDto,
-  signal?: AbortSignal
-) => {
-  return customInstance<Blob>({
-    url: `/agent/conversations/${id}/messages`,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    data: messageRequestDto,
-    responseType: 'blob',
-    signal,
-  });
-};
-
-export const getAgentControllerSendMessageMutationOptions = <
-  TError = unknown,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof agentControllerSendMessage>>,
-    TError,
-    { id: string; data: MessageRequestDto },
-    TContext
-  >;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof agentControllerSendMessage>>,
-  TError,
-  { id: string; data: MessageRequestDto },
-  TContext
-> => {
-  const mutationKey = ['agentControllerSendMessage'];
-  const { mutation: mutationOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey } };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof agentControllerSendMessage>>,
-    { id: string; data: MessageRequestDto }
-  > = (props) => {
-    const { id, data } = props ?? {};
-
-    return agentControllerSendMessage(id, data);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type AgentControllerSendMessageMutationResult = NonNullable<
-  Awaited<ReturnType<typeof agentControllerSendMessage>>
->;
-export type AgentControllerSendMessageMutationBody = MessageRequestDto;
-export type AgentControllerSendMessageMutationError = unknown;
-
-/**
- * @summary Send a message in a conversation
- */
-export const useAgentControllerSendMessage = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof agentControllerSendMessage>>,
-    TError,
-    { id: string; data: MessageRequestDto },
-    TContext
-  >;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof agentControllerSendMessage>>,
-  TError,
-  { id: string; data: MessageRequestDto },
-  TContext
-> => {
-  const mutationOptions = getAgentControllerSendMessageMutationOptions(options);
 
   return useMutation(mutationOptions);
 };
